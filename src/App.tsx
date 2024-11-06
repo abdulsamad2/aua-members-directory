@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { MapContainer, TileLayer, Popup, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,7 +11,14 @@ import { Avatar, AvatarImage, AvatarFallback } from "./components/ui/avatar"
 import { Badge } from "./components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./components/ui/tooltip"
 import useFetchMembers from './hooks/useMember'
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
+const DefaultIcon = L.icon({
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+});
 
+L.Marker.prototype.options.icon = DefaultIcon;
 interface Member {
   id: string
   email: string
@@ -49,8 +56,6 @@ const calculatePolygonCenter = (polygon: { lat: number; lng: number }[]) => {
     lng: lngSum / polygon.length,
   }
 }
-import Marker from 'leaflet/dist/images/marker-icon.png';
-// import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const MapUpdater: React.FC<{ center: L.LatLngExpression; zoom: number }> = ({ center, zoom }) => {
   const map = useMap()
