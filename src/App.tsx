@@ -269,8 +269,7 @@ const UKMemberMap: React.FC = () => {
             <h2 className="text-2xl font-semibold mb-4 text-primary">Closest Members</h2>
             {locationStatus === 'loading' ? (
               <div className="text-center">
-                <Loader2 className="mr-2 h-8 w-8 animate-spin" />
-                <p>Loading location...</p>
+                <p>Getting your location...</p>
               </div>
             ) : locationStatus === 'denied' ? (
               <div className="text-center">
