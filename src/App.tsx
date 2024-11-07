@@ -95,19 +95,15 @@ const UKMemberMap: React.FC = () => {
             const { latitude, longitude } = position.coords
             setUserLocation([latitude, longitude])
             findClosestMembers([latitude, longitude])
-            setLocationStatus('granted')
           },
           (error) => {
             console.error('Error getting location', error)
-
-            setLocationStatus('denied')
             // Fallback to default location if geolocation fails
             setUserLocation([51.509865, -0.118092]) // London
           }
         )
       } else {
         // Fallback to default location if geolocation is not supported
-        setLocationStatus('denied')
         setUserLocation([51.509865, -0.118092]) // London
       }
     }
@@ -120,7 +116,7 @@ const UKMemberMap: React.FC = () => {
       setMapCenter(userLocation)
       setMapZoom(8)
       findClosestMembers(userLocation)
-      // console.log(locationName)
+      
     }
   }, [userLocation])
 
@@ -138,13 +134,14 @@ const UKMemberMap: React.FC = () => {
       } catch (error) {
         console.error("Error fetching location name:", error);
         setLocationName(() => 'location not found');
+        
       }
     };
 
     if (userLocation) {
       fetchLocationName();
     }
-  }, [userLocation]);
+  }, [userLocation,searchQuery]);
 
   const handleSearch = async () => {
     setLoading(true)
@@ -208,166 +205,156 @@ const UKMemberMap: React.FC = () => {
           {loading ? 'Searching...' : 'Search'}
         </Button>
       </div>
-      <div className="flex flex-col lg:flex-row gap-5 h-full">
-        {/* Map Section */}
-        <div className="w-full lg:w-1/2 h-full order-2 lg:order-1">
-          <Card className="w-full h-full bg-gray-200">
-            <CardContent className="p-0">
-              <div className="h-[300px] sm:h-[400px] md:h-[600px] lg:h-[700px]">
-                <MapContainer
-                  center={mapCenter}
-                  zoom={mapZoom}
-                  className="w-full h-full"
-                  ref={mapRef}
-                >
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  {members.map((member) => {
-                    const center = calculatePolygonCenter(member.custom_fields.mepr_polygon_array);
-                    return (
-                      <Marker key={member.id} position={[center.lat, center.lng]}>
-                        <Popup>
-                          <div>
-                            <h3 className="font-bold">{member.custom_fields.mepr_business_trading_name}</h3>
-                            <p>{member.formatted_address}</p>
-                            <a
-                              href={member.profile_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-500 hover:underline"
-                            >
-                              View Profile
-                            </a>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
-                  {userLocation && (
-                    <Marker position={userLocation}>
-                      <Popup pane='true' >
+     <div className="flex flex-col lg:flex-row gap-5 h-full">
+      {/* Map Section */}
+      <div className="w-full lg:w-1/2 h-full order-2 lg:order-1">
+        <Card className="w-full h-full bg-gray-200">
+          <CardContent className="p-0">
+            <div className="h-[300px] sm:h-[400px] md:h-[600px] lg:h-[700px]">
+              <MapContainer
+                center={mapCenter}
+                zoom={mapZoom}
+                className="w-full h-full"
+                ref={mapRef}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {members.map((member,index) => {
+                  const center = calculatePolygonCenter(member.custom_fields.mepr_polygon_array);
+                  return (
+                    <Marker key={index} position={[center.lat, center.lng]}>
+                      <Popup>
                         <div>
-                          <h3 className="font-bold">Your Location</h3>
-                          <p>{locationName || 'Unknown location'}</p>
+                          <h3 className="font-bold">{member.custom_fields.mepr_business_trading_name}</h3>
+                          <p>{member.formatted_address}</p>
+                          <a
+                            href={member.profile_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 hover:underline"
+                          >
+                            View Profile
+                          </a>
                         </div>
                       </Popup>
-
                     </Marker>
-                  )}
-                  <MapUpdater center={mapCenter} zoom={mapZoom} />
-                </MapContainer>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Closest Members Section */}
-        <div className="w-full lg:w-1/2 md:overflow-y-auto h-full order-2 lg:order-2">
-          <div className="flex flex-col items-center justify-center py-4">
-            <h2 className="text-2xl font-semibold mb-4 text-primary">Closest Members</h2>
-            {locationStatus === 'loading' ? (
-              <div className="text-center">
-                <p>Getting your location...</p>
-              </div>
-            ) : locationStatus === 'denied' ? (
-              <div className="text-center">
-                <p className="text-red-500">Location denied. Showing London by default.</p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <p className="text-gray-500">Nearby members: {locationName}</p>
-              </div>
-            )}
-
-
-          </div>
-          <AnimatePresence>
-            {closestMembers.length > 0 ? (
-              <motion.div
-                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                {closestMembers.slice(0, 6).map((member, index) => (
-                  <motion.div
-                    key={member.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center space-x-4">
-                          <Avatar>
-                            <AvatarImage src={member.avatar_url} alt={member.full_name} />
-                            <AvatarFallback>{member.full_name[0]}</AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <CardTitle className="text-lg font-semibold">{member.custom_fields.mepr_business_trading_name}</CardTitle>
-                            <CardDescription>{member.full_name}</CardDescription>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div className="flex items-center text-sm">
-                            <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span>{member.formatted_address}</span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span>{member.custom_fields.mepr_contact_number}</span>
-                          </div>
-                          <div className="flex items-center text-sm">
-                            <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
-                            <span>{member.email}</span>
-                          </div>
-                        </div>
-                        <div className="mt-4 flex justify-between items-center">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-gray-100 text-gray-800 p-2 rounded-md shadow-md hover:bg-gray-200"
-                                >
-                                  {member.distance
-                                    ? `${(member.distance / 1000).toFixed(1)} km from ${locationName}`
-                                    : 'Distance N/A'}
-                                </Badge>
-                              </TooltipTrigger>
-                              <TooltipContent
-                                className="bg-black text-white p-3 rounded-md shadow-lg text-sm transition-opacity duration-300 ease-in-out"
-                                side="top"
-                                align="center"
-                              >
-                                <p>Location distance</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-
-                          <Button size="sm" asChild>
-                            <a href={member.profile_url} target="_blank" rel="noopener noreferrer">View Profile</a>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                ))}
-              </motion.div>
-            ) : (
-              // Loading Spinner with Skeleton
-              <div className="flex items-center justify-center h-96">
-                <Loader2 className="h-12 w-12 animate-spin" />
-              </div>
-            )}
-          </AnimatePresence>
-        </div>
+                  );
+                })}
+                {userLocation && (
+                  <Marker position={userLocation}>
+                    <Popup pane='true' >
+                      <div>
+                        <h3 className="font-bold">Your Location</h3>
+                        <p>{locationName || 'Unknown location'}</p>
+                      </div>
+                    </Popup>
+        
+        </Marker>
+                )}
+                <MapUpdater center={mapCenter} zoom={mapZoom} />
+              </MapContainer>
+            </div>
+          </CardContent>
+        </Card>
       </div>
+
+      {/* Closest Members Section */}
+      <div className="w-full lg:w-1/2 md:overflow-y-auto h-full order-2 lg:order-2">
+        <div className="flex flex-col items-center justify-center py-4">
+          <h2 className="text-2xl font-semibold mb-4 text-primary">Closest Members</h2>
+          {userLocation && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Your location: {locationName || 'Unknown location'}
+            </p>
+          )}
+        </div>
+        <AnimatePresence>
+          {closestMembers.length > 0 ? (
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {closestMembers.slice(0, 6).map((member, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                    <CardHeader className="pb-2">
+                      <div className="flex items-center space-x-4">
+                        <Avatar>
+                          <AvatarImage src={member.avatar_url} alt={member.full_name} />
+                          <AvatarFallback>{member.full_name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className="text-lg font-semibold">{member.custom_fields.mepr_business_trading_name}</CardTitle>
+                          <CardDescription>{member.full_name}</CardDescription>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm">
+                          <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>{member.formatted_address}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>{member.custom_fields.mepr_contact_number}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                          <span>{member.email}</span>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex justify-between items-center">
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Badge
+                                variant="secondary"
+                                className="text-xs bg-gray-100 text-gray-800 p-2 rounded-md shadow-md hover:bg-gray-200"
+                              >
+                                {member.distance
+                                  ? `${(member.distance / 1000).toFixed(1)} km from ${locationName}`
+                                  : 'Distance N/A'}
+                              </Badge>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              className="bg-black text-white p-3 rounded-md shadow-lg text-sm transition-opacity duration-300 ease-in-out"
+                              side="top"
+                              align="center"
+                            >
+                              <p>Location distance</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+
+                        <Button size="sm" asChild>
+                          <a href={member.profile_url} target="_blank" rel="noopener noreferrer">View Profile</a>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            // Loading Spinner with Skeleton
+            <div className="flex items-center justify-center h-96">
+              <Loader2 className="h-12 w-12 animate-spin" />
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
     </div>
   );
 
