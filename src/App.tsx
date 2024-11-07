@@ -72,7 +72,6 @@ const UKMemberMap: React.FC = () => {
   const [loading, setLoading] = useState(false)
   const [userLocation, setUserLocation] = useState<L.LatLngExpression | null>(null)
   const [locationName, setLocationName] = useState('');
-  const [locationStatus, setLocationStatus] = useState<'granted' | 'denied' | 'loading'>('loading')
 
   const mapRef = useRef<L.Map>(null)
   const findClosestMembers = useCallback((location: L.LatLngExpression) => {
