@@ -114,6 +114,8 @@ const UKMemberMap: React.FC = () => {
     if (userLocation) {
       setMapCenter(userLocation)
       setMapZoom(8)
+      findClosestMembers(userLocation)
+      // console.log(locationName)
     }
   }, [userLocation])
 
@@ -140,7 +142,6 @@ const UKMemberMap: React.FC = () => {
   }, [userLocation]);
 
   const handleSearch = async () => {
-    setLocationName(searchQuery)
     setLoading(true)
     if (!searchQuery.trim()) {
       setLoading(false)
@@ -169,12 +170,17 @@ const UKMemberMap: React.FC = () => {
         const { lat, lon } = data[0]
         newCenter = [parseFloat(lat), parseFloat(lon)]
       } else {
+        // nice dailog from shadcn
+        // build a nice popup component
+        alert('Invalid postcode or location')
         throw new Error('Invalid postcode or location')
       }
 
       setMapCenter(newCenter)
       setMapZoom(8)
       findClosestMembers(newCenter)
+      setLocationName(searchQuery)
+
     } catch (error) {
       console.error('Error searching location:', error)
     } finally {
