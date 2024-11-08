@@ -252,7 +252,7 @@ const UKMemberMap: React.FC = () => {
                     })}
                     {userLocation && (
                       <Marker icon={customIcon} position={userLocation}>
-                        <Popup pane="true" open>
+                        <Popup pane="true">
                           <div>
                             <h3 className="font-bold">You Are Here</h3>
                             <p>{locationName || 'Unknown location'}</p>
