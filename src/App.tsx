@@ -17,6 +17,15 @@ const DefaultIcon = L.icon({
   iconUrl: icon,
   shadowUrl: iconShadow,
 });
+import pinIcon from './../public/location-pin.png'
+
+const customIcon = new L.Icon({
+  iconUrl: pinIcon,
+  iconSize: [25, 25],
+  iconAnchor: [12, 41],
+
+});
+
 
 L.Marker.prototype.options.icon = DefaultIcon;
 interface Member {
@@ -115,7 +124,7 @@ const UKMemberMap: React.FC = () => {
       setMapCenter(userLocation)
       setMapZoom(8)
       findClosestMembers(userLocation)
-      
+
     }
   }, [userLocation])
 
@@ -133,14 +142,14 @@ const UKMemberMap: React.FC = () => {
       } catch (error) {
         console.error("Error fetching location name:", error);
         setLocationName(() => 'location not found');
-        
+
       }
     };
 
     if (userLocation) {
       fetchLocationName();
     }
-  }, [userLocation,searchQuery]);
+  }, [userLocation, searchQuery]);
 
   const handleSearch = async () => {
     setLoading(true)
@@ -189,171 +198,173 @@ const UKMemberMap: React.FC = () => {
     }
   }
   return (
-    <div className="container md:fixed mx-auto p-4 h-screen">
-      <h1 className="text-4xl font-bold mb-8 text-center text-primary">UK Member Map</h1>
-      <div className="mb-8 flex flex-col sm:flex-row items-center justify-center">
-        <Input
-          type="text"
-          placeholder="Enter UK postcode or location"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="mb-2 sm:mb-0 sm:mr-2 w-full sm:w-64"
-        />
-        <Button onClick={handleSearch} disabled={loading} className="w-full sm:w-auto">
-          {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
-          {loading ? 'Searching...' : 'Search'}
-        </Button>
-      </div>
-     <div className="flex flex-col lg:flex-row gap-5 h-full">
-      {/* Map Section */}
-      <div className="w-full lg:w-1/2 h-full order-2 lg:order-1">
-        <Card className="w-full h-full bg-gray-200">
-          <CardContent className="p-0">
-            <div className="h-[300px] sm:h-[400px] md:h-[600px] lg:h-[700px]">
-              <MapContainer
-                center={mapCenter}
-                zoom={mapZoom}
-                className="w-full h-full"
-                ref={mapRef}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {members.map((member,index) => {
-                  const center = calculatePolygonCenter(member.custom_fields.mepr_polygon_array);
-                  return (
-                    <Marker key={index} position={[center.lat, center.lng]}>
-                      <Popup>
-                        <div>
-                          <h3 className="font-bold">{member.custom_fields.mepr_business_trading_name}</h3>
-                          <p>{member.formatted_address}</p>
-                          <a
-                            href={member.profile_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 hover:underline"
-                          >
-                            View Profile
-                          </a>
-                        </div>
-                      </Popup>
-                    </Marker>
-                  );
-                })}
-                {userLocation && (
-                  <Marker position={userLocation}>
-                    <Popup pane='true' >
-                      <div>
-                        <h3 className="font-bold">Your Location</h3>
-                        <p>{locationName || 'Unknown location'}</p>
-                      </div>
-                    </Popup>
-        
-        </Marker>
-                )}
-                <MapUpdater center={mapCenter} zoom={mapZoom} />
-              </MapContainer>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Closest Members Section */}
-      <div className="w-full lg:w-1/2 md:overflow-y-auto h-full order-2 lg:order-2">
-        <div className="flex flex-col items-center justify-center py-4">
-          <h2 className="text-2xl font-semibold mb-4 text-primary">Closest Members</h2>
-          {userLocation && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Your location: {locationName || 'Unknown location'}
-            </p>
-          )}
+    <div className='overflow-x-hidden'>
+      <div className=" md:fixed w-screen p-4 h-screen">
+        <h1 className="text-4xl font-bold mb-8 text-center text-primary">Find Nearby Scanners      </h1>
+        <div className="mb-8 flex flex-col sm:flex-row items-center justify-center">
+          <Input
+            type="text"
+            placeholder="Enter UK postcode or location"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="mb-2 sm:mb-0 sm:mr-2 w-full sm:w-64"
+          />
+          <Button onClick={handleSearch} disabled={loading} className="w-full sm:w-auto">
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+            {loading ? 'Searching...' : 'Search'}
+          </Button>
         </div>
-        <AnimatePresence>
-          {closestMembers.length > 0 ? (
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {closestMembers.slice(0, 6).map((member, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ delay: index * 0.1 }}
-                >
-                  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <CardHeader className="pb-2">
-                      <div className="flex items-center space-x-4">
-                        <Avatar>
-                          <AvatarImage src={member.avatar_url} alt={member.full_name} />
-                          <AvatarFallback>{member.full_name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <CardTitle className="text-lg font-semibold">{member.custom_fields.mepr_business_trading_name}</CardTitle>
-                          <CardDescription>{member.full_name}</CardDescription>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex items-center text-sm">
-                          <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-                          <span>{member.formatted_address}</span>
-                        </div>
-                        <div className="flex items-center text-sm">
-                          <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
-                          <span>{member.custom_fields.mepr_contact_number}</span>
-                        </div>
-                        <div className="flex items-center text-sm">
-                          <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
-                          <span>{member.email}</span>
-                        </div>
-                      </div>
-                      <div className="mt-4 flex justify-between items-center">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Badge
-                                variant="secondary"
-                                className="text-xs bg-gray-100 text-gray-800 p-2 rounded-md shadow-md hover:bg-gray-200"
+        <div className="flex flex-col lg:flex-row gap-5 h-full">
+          {/* Map Section */}
+          <div className="w-full  md:py-16 lg:w-1/2 h-full order-2 lg:order-1 ">
+            <Card className="w-full md:h-[95vh]">
+              <CardContent className="p-0">
+                <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[500px]">
+                  <MapContainer
+                    center={mapCenter}
+                    zoom={mapZoom}
+                    className="w-full h-full"
+                    ref={mapRef}
+                  >
+                    <TileLayer
+                      url="http://{s}.tile.osm.org/{z}/{x}/{y}.png"
+                    />
+                    {members.map((member, index) => {
+                      const center = calculatePolygonCenter(member.custom_fields.mepr_polygon_array);
+                      return (
+                        <Marker key={index} position={[center.lat, center.lng]}>
+                          <Popup>
+                            <div>
+                              <h3 className="font-bold">{member.custom_fields.mepr_business_trading_name}</h3>
+                              <p>{member.formatted_address}</p>
+                              <a
+                                href={member.profile_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline"
                               >
-                                {member.distance
-                                  ? `${(member.distance / 1000).toFixed(1)} km from ${locationName}`
-                                  : 'Distance N/A'}
-                              </Badge>
-                            </TooltipTrigger>
-                            <TooltipContent
-                              className="bg-black text-white p-3 rounded-md shadow-lg text-sm transition-opacity duration-300 ease-in-out"
-                              side="top"
-                              align="center"
-                            >
-                              <p>Location distance</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                                View Profile
+                              </a>
+                            </div>
+                          </Popup>
+                        </Marker>
+                      );
+                    })}
+                    {userLocation && (
+                      <Marker icon={customIcon} position={userLocation}>
+                        <Popup pane="true" open>
+                          <div>
+                            <h3 className="font-bold">You Are Here</h3>
+                            <p>{locationName || 'Unknown location'}</p>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    )}
 
-                        <Button size="sm" asChild>
-                          <a href={member.profile_url} target="_blank" rel="noopener noreferrer">View Profile</a>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            // Loading Spinner with Skeleton
-            <div className="flex items-center justify-center h-96">
-              <Loader2 className="h-12 w-12 animate-spin" />
+                    <MapUpdater center={mapCenter} zoom={mapZoom} />
+                  </MapContainer>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Closest Members Section */}
+          <div className="w-full lg:w-[50vw] md:overflow-y-auto scroll-mb-0  order-2 lg:order-2">
+            <div className="flex flex-col items-center justify-center py-4">
+              <h2 className="text-2xl font-semibold mb-4 text-primary">Nearby Scanner Locations</h2>
+
+              {userLocation && (
+                <p className="text-sm text-muted-foreground mb-4">
+                  Your location: {locationName || 'Unknown location'}
+                </p>
+              )}
             </div>
-          )}
-        </AnimatePresence>
+            <AnimatePresence>
+              {closestMembers.length > 0 ? (
+                <motion.div
+                  className="grid grid-cols-1 sm:pb-36 sm:grid-cols-2 gap-4"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  {closestMembers.slice(0, 6).map((member, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -20 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center space-x-4">
+                            <Avatar>
+                              <AvatarImage src={member.avatar_url} alt={member.full_name} />
+                              <AvatarFallback>{member.full_name[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <CardTitle className="text-lg font-semibold">{member.custom_fields.mepr_business_trading_name}</CardTitle>
+                              <CardDescription>{member.full_name}</CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <div className="flex items-center text-sm">
+                              <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span>{member.formatted_address}</span>
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span>{member.custom_fields.mepr_contact_number}</span>
+                            </div>
+                            <div className="flex items-center text-sm">
+                              <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
+                              <span>{member.email}</span>
+                            </div>
+                          </div>
+                          <div className="mt-4 flex justify-between items-center">
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-xs bg-gray-100 text-gray-800 p-2 rounded-md shadow-md hover:bg-gray-200"
+                                  >
+                                    {member.distance
+                                      ? `${(member.distance / 1000).toFixed(1)} km from ${locationName}`
+                                      : 'Distance N/A'}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  className="bg-black text-white p-3 rounded-md shadow-lg text-sm transition-opacity duration-300 ease-in-out"
+                                  side="top"
+                                  align="center"
+                                >
+                                  <p>Location distance</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+
+                            <Button size="sm" asChild>
+                              <a href={member.profile_url} target="_blank" rel="noopener noreferrer">View Profile</a>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                // Loading Spinner with Skeleton
+                <div className="flex items-center justify-center h-96">
+                  <Loader2 className="h-12 w-12 animate-spin" />
+                </div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
       </div>
-    </div>
     </div>
   );
 
