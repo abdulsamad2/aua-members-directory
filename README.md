@@ -6,8 +6,6 @@ veterinary ultrasound scanners, ranked by distance and plotted on a map.
 
 **Live:** https://aua-members-directory.vercel.app
 
-![Directory](docs/screenshot.png)
-
 ## What it does
 
 - **Postcode / location search** with geocoding, defaulting to the visitor's
@@ -31,10 +29,3 @@ npm run dev          # http://localhost:5173
 ```bash
 npm run build && npm run preview
 ```
-
-## A note on the screenshot
-
-The directory shows real members' phone numbers and email addresses — they're
-public on the live site, but a README hero image pushes them further than the
-members may expect. `docs/screenshot.png` is best cropped to the map and search
-bar, or captured with the contact lines blurred.
