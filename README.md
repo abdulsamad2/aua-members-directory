@@ -1,50 +1,40 @@
-# React + TypeScript + Vite
+# AUA Members Directory
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A geo-search directory for the [Animal Ultrasound Association](https://animalultrasoundassociation.org)
+— members of the public enter a UK postcode and get the nearest accredited
+veterinary ultrasound scanners, ranked by distance and plotted on a map.
 
-Currently, two official plugins are available:
+**Live:** https://aua-members-directory.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+![Directory](docs/screenshot.png)
 
-## Expanding the ESLint configuration
+## What it does
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Postcode / location search** with geocoding, defaulting to the visitor's
+  detected location.
+- **Distance-ranked results** — each member card shows the practice, the
+  practitioner, contact details and how far away they are.
+- **Interactive Leaflet map** with a pin per member, synced to the result list.
+- **Member profiles** for each listing.
 
-- Configure the top-level `parserOptions` property like this:
+## Stack
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+React 18 · TypeScript · Vite · Tailwind CSS · Leaflet
+
+## Running locally
+
+```bash
+npm install
+npm run dev          # http://localhost:5173
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
-
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
-
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+npm run build && npm run preview
 ```
+
+## A note on the screenshot
+
+The directory shows real members' phone numbers and email addresses — they're
+public on the live site, but a README hero image pushes them further than the
+members may expect. `docs/screenshot.png` is best cropped to the map and search
+bar, or captured with the contact lines blurred.
